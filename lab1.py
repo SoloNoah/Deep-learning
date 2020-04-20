@@ -5,13 +5,16 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from wordcloud import WordCloud
 import string
-from numpy import array
+from numpy import array, argmax
+from collections import Counter
+
+'''Noah Solomon & Emilia Zorin'''
 
 '''
     remove punctuation and split data into sentences
     calls word tokenize at the end
 '''
-
+'''emilia pushed'''
 
 def sentance_splitting(sent_list, word_list):
     file_reader = open("sample.txt", "r")
@@ -23,6 +26,7 @@ def sentance_splitting(sent_list, word_list):
         data = file_reader.readline()
     print(sent_list)
     tokenize(sent_list, word_list)
+    file_reader.close()
 
 '''
     the split sentences are split into tokens
@@ -49,7 +53,6 @@ def stopwords_removal(word_list):
             if i not in stop_words:
                 sentance.append(i)
         sentences.append(sentance)
-
     return sentences
 
 
@@ -65,17 +68,15 @@ def stemmer(only_words):
 
 
 def onehot_encoding(stems):
+    out = open("output1hot.txt", "w")
     values = array(stems)
     label_encoder = LabelEncoder()
+    one_hot_encoder = OneHotEncoder(sparse=False)
     integer_encoded = label_encoder.fit_transform(values)
-    onehot_encoder = OneHotEncoder(sparse=False)
     integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
-    onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
-    out = open("output1hot.txt", "w")
-    for w in onehot_encoded:
-        out.write(str(w))
-        out.write("\n")
-
+    one_hot_encoded = one_hot_encoder.fit_transform(integer_encoded)
+    for w in one_hot_encoded:
+        out.write("\n" + str(w))
     out.close()
 
 
@@ -89,6 +90,24 @@ def create_dictionary(word_list):
         sentance.append(w)
         dictionary[w] = dictionary.get(w, 0) + 1
     return dictionary
+
+
+'''
+    return 20 most common words
+'''
+def common_words(words):
+    final = []
+    str1 = ""
+    for element in words:
+        str1 += " " + element
+    split_it = str1.split()
+    counter = Counter(split_it)
+    most_occur = counter.most_common(20)
+    # most_occur holds a list of tuples (word,freq) that converted into a list that contains the top 20 most frequent words
+    for tuple_ele in most_occur:
+        tup1 = ' '.join(map(str, tuple_ele))
+        final.append((tup1.split())[0])
+    return final
 
 '''
     creates wordcloud with the given format and data supplied.
@@ -125,7 +144,8 @@ def main():
     onehot_encoding(word_list)
     print("onehot encoding output in output1hot.txt file")
 
-    dictionary = create_dictionary(word_list)
+    common = common_words(word_list)
+    dictionary = create_dictionary(common)
     print(dictionary)
     create_wordcloud(dictionary)
     print("created image for words within top 20 frequencies")
