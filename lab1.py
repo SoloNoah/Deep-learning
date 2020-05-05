@@ -4,6 +4,8 @@ from nltk.stem.porter import *
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from wordcloud import WordCloud
+import pandas as pd
+import io
 import string
 from numpy import array, argmax
 from collections import Counter
@@ -125,7 +127,24 @@ def create_wordcloud(data):
     word_cloud.to_file('image_cloud.png')
 
 
+def read_col(taglist):
+    df = pd.read_csv("BBC news dataset.csv")
+    taglist.append(df['tags'])
+
+
+
+def load_vectors(fname):
+    fin = io.open(fname, 'r', encoding='utf-8', newline='\n', errors='ignore')
+    n, d = map(int, fin.readline().split())
+    data = {}
+    for line in fin:
+        tokens = line.rstrip().split(' ')
+        data[tokens[0]] = map(float, tokens[1:])
+    return data
+
+
 def main():
+    x=[]
     sent_list, word_list, words_only_list = [], [], []
     sentance_splitting(sent_list, word_list)
 
@@ -149,6 +168,11 @@ def main():
     print(dictionary)
     create_wordcloud(dictionary)
     print("created image for words within top 20 frequencies")
+    print("Vector:\n")
+    print(load_vectors("wikinews.vec"))
+    print("excel spread sheet:\n")
+    read_col(x)
+    print(x)
 
 
 main()
